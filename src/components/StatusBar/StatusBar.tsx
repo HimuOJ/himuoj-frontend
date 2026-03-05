@@ -19,7 +19,7 @@ import {
   PlayRegular,
   ErrorCircleFilled,
 } from '@fluentui/react-icons';
-import { useAppStore, type SubmissionStatus, type ConnectionStatus, type NotificationStatus } from '../../stores/useAppStore';
+import { useAppStore, type SubmissionStatus, type ConnectionStatus } from '../../stores/useAppStore';
 import { StatusBarItem } from './StatusBarItem';
 
 const useStyles = makeStyles({

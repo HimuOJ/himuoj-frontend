@@ -6,6 +6,10 @@ type PagedProblemSummaryResponse = ProblemComponents['schemas']['PagedProblemSum
 type TestCaseDetail = ProblemComponents['schemas']['TestCaseDetail'];
 type TestCaseListResponse = ProblemComponents['schemas']['TestCaseListResponse'];
 
+interface ProblemDetail extends ProblemSummary {
+  description: string;
+}
+
 type SubmissionDetail = SubmissionComponents['schemas']['SubmissionDetail'];
 type TestCaseResultDetail = SubmissionComponents['schemas']['TestCaseResultDetail'];
 type TestCaseResultListResponse = SubmissionComponents['schemas']['TestCaseResultListResponse'];
@@ -13,15 +17,48 @@ type PagedSubmissionSummaryResponse = SubmissionComponents['schemas']['PagedSubm
 
 const NETWORK_DELAY_MS = 220;
 
-const problems: ProblemSummary[] = [
-  {
+const problemDetails: Record<number, ProblemDetail> = {
+  1: {
     id: 1,
     title: 'A + B 问题',
     timeLimitMs: 1000,
     memoryLimitKb: 65536,
     authorId: 1001,
     createdAt: '2026-01-08T10:20:00.000Z',
+    description: `# A + B 问题
+
+## 题目描述
+
+给定两个整数 A 和 B，计算它们的和。
+
+## 输入格式
+
+一行两个整数 A 和 B，用空格分隔。
+
+## 输出格式
+
+一个整数，表示 A + B 的结果。
+
+## 数据范围
+
+- \`-10^9 ≤ A, B ≤ 10^9\`
+
+## 样例输入
+
+\`\`\`input
+1 2
+\`\`\`
+
+## 样例输出
+
+\`\`\`output
+3
+\`\`\``,
   },
+};
+
+const problems: ProblemSummary[] = [
+  problemDetails[1],
   {
     id: 2,
     title: '两数之和',
@@ -252,4 +289,9 @@ export async function listSubmissionTestCaseResultsMock(submissionId: number): P
   return {
     items: submissionResultsBySubmissionId[submissionId] ?? [],
   };
+}
+
+export async function getProblemDetailMock(problemId: number): Promise<ProblemDetail | null> {
+  await sleep(NETWORK_DELAY_MS);
+  return problemDetails[problemId] ?? null;
 }

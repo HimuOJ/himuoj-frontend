@@ -51,7 +51,7 @@ interface AppState {
   notification: StatusNotification | null;
   notify: (status: NotificationStatus, message: string) => void;
   clearNotification: () => void;
-  notificationTimeout: NodeJS.Timeout | null;
+  notificationTimeout: number | null;
 
   // Theme
   isDarkMode: boolean;
@@ -104,7 +104,7 @@ export const useAppStore = create<AppState>((set) => ({
     }
     set({ notification: null, notificationTimeout: null });
   },
-  notificationTimeout: null as NodeJS.Timeout | null,
+  notificationTimeout: null as number | null,
 
   // Theme
   isDarkMode: false,
