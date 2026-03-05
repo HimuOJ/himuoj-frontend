@@ -4,6 +4,7 @@ import {
   shorthands,
   Text,
   mergeClasses,
+  Spinner,
 } from '@fluentui/react-components';
 import {
   CircleRegular,
@@ -18,7 +19,7 @@ import {
   PlayRegular,
   ErrorCircleFilled,
 } from '@fluentui/react-icons';
-import { useAppStore, type SubmissionStatus, type ConnectionStatus } from '../../stores/useAppStore';
+import { useAppStore, type SubmissionStatus, type ConnectionStatus, type NotificationStatus } from '../../stores/useAppStore';
 import { StatusBarItem } from './StatusBarItem';
 
 const useStyles = makeStyles({
@@ -74,6 +75,26 @@ const useStyles = makeStyles({
   connectionConnectingActive: {
     color: '#FFE7B0',
   },
+  success: {
+    backgroundColor: '#2D7D46',
+    color: '#FFFFFF',
+    ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
+  },
+  error: {
+    backgroundColor: '#C4314B',
+    color: '#FFFFFF',
+    ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
+  },
+  info: {
+    backgroundColor: '#CA6C1D',
+    color: '#FFFFFF',
+    ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
+  },
+  running: {
+    backgroundColor: '#CA6C1D',
+    color: '#FFFFFF',
+    ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
+  },
 });
 
 const getSubmissionStatusInfo = (status: SubmissionStatus) => {
@@ -111,6 +132,8 @@ export const StatusBar: React.FC = () => {
     connectionStatus,
     userInfo,
     submissionStatus,
+    notification,
+    notify,
   } = useAppStore();
 
   const isActive = selectedProblem !== null;
@@ -124,14 +147,32 @@ export const StatusBar: React.FC = () => {
 
   const submissionInfo = getSubmissionStatusInfo(submissionStatus);
 
+  const handleRunClick = () => {
+    notify('running', '运行中');
+    setTimeout(() => {
+      notify('success', '提交通过');
+    }, 1000);
+  };
+
+  const isRunning = notification?.status === 'running';
+
+  const getContainerClassName = () => {
+    if (notification) {
+      return mergeClasses(styles.container, styles[notification.status]);
+    }
+    return mergeClasses(styles.container, isActive ? styles.active : styles.idle);
+  };
+
+  const displayText = notification ? notification.message : submissionInfo.text;
+
   return (
     <footer
-      className={mergeClasses(styles.container, isActive ? styles.active : styles.idle)}
+      className={getContainerClassName()}
       role="contentinfo"
       aria-label="状态栏"
     >
       <div className={styles.leftSection}>
-        <Text>{submissionInfo.text}</Text>
+        <Text>{displayText}</Text>
       </div>
 
       <div className={styles.rightSection}>
@@ -144,10 +185,11 @@ export const StatusBar: React.FC = () => {
             />
 
             <StatusBarItem
-              icon={<PlayRegular />}
+              icon={isRunning ? <Spinner size="tiny" /> : <PlayRegular />}
               text="运行"
               tooltip="运行代码"
-              onClick={() => console.log('Run code')}
+              onClick={handleRunClick}
+              disabled={isRunning}
             />
           </>
         )}

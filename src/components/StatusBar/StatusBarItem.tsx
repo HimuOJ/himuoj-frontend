@@ -20,6 +20,14 @@ const useStyles = makeStyles({
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
     },
   },
+  disabled: {
+    cursor: 'not-allowed',
+    opacity: 0.5,
+    ':hover': {
+      opacity: 0.5,
+      backgroundColor: 'transparent',
+    },
+  },
   icon: {
     fontSize: '14px',
   },
@@ -35,6 +43,7 @@ interface StatusBarItemProps {
   tooltip?: string;
   onClick?: () => void;
   className?: string;
+  disabled?: boolean;
 }
 
 export const StatusBarItem: React.FC<StatusBarItemProps> = ({
@@ -43,14 +52,21 @@ export const StatusBarItem: React.FC<StatusBarItemProps> = ({
   tooltip,
   onClick,
   className,
+  disabled = false,
 }) => {
   const styles = useStyles();
-  const isClickable = !!onClick;
+  const isClickable = !!onClick && !disabled;
+
+  const handleClick = () => {
+    if (!disabled && onClick) {
+      onClick();
+    }
+  };
 
   const content = (
     <div
-      className={`${styles.item} ${isClickable ? styles.clickable : ''} ${className || ''}`}
-      onClick={onClick}
+      className={`${styles.item} ${isClickable ? styles.clickable : ''} ${disabled ? styles.disabled : ''} ${className || ''}`}
+      onClick={handleClick}
       role={isClickable ? 'button' : undefined}
       tabIndex={isClickable ? 0 : undefined}
     >
