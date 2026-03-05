@@ -3,8 +3,8 @@ import {
   tokens,
   shorthands,
   Text,
-  Tooltip,
   mergeClasses,
+  Spinner,
 } from '@fluentui/react-components';
 import {
   CircleRegular,
@@ -16,17 +16,18 @@ import {
   CloudSyncRegular,
   PersonRegular,
   CodeRegular,
-  PlayCircleRegular,
+  PlayRegular,
   ErrorCircleFilled,
 } from '@fluentui/react-icons';
 import { useAppStore, type SubmissionStatus, type ConnectionStatus } from '../../stores/useAppStore';
+import { StatusBarItem } from './StatusBarItem';
 
 const useStyles = makeStyles({
   container: {
+    position: 'relative',
+    zIndex: 2,
     height: '28px',
     width: '100%',
-    backgroundColor: tokens.colorBrandBackground,
-    color: tokens.colorNeutralForegroundOnBrand,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -34,59 +35,65 @@ const useStyles = makeStyles({
     paddingRight: '12px',
     boxSizing: 'border-box',
     fontSize: '12px',
-    ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
-    transition: 'background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s ease',
+    ...shorthands.borderTop('1px', 'solid', tokens.colorNeutralStroke2),
+    transition: 'background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.5s ease',
   },
-  section: {
+  idle: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    color: tokens.colorNeutralForeground1,
+  },
+  active: {
+    backgroundColor: tokens.colorBrandBackground,
+    color: tokens.colorNeutralForegroundOnBrand,
+    ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
+  },
+  leftSection: {
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
   },
-  item: {
+  rightSection: {
     display: 'flex',
     alignItems: 'center',
-    gap: '6px',
-    cursor: 'default',
-    transition: 'color 0.2s ease',
-    ':hover': {
-      opacity: 0.8,
-    },
+    gap: '10px',
   },
-  icon: {
-    fontSize: '14px',
-    transition: 'color 0.2s ease',
+  connectionConnectedIdle: {
+    color: '#2D7D46',
   },
-  text: {
-    color: 'inherit',
+  connectionDisconnectedIdle: {
+    color: '#C4314B',
   },
-  statusIdle: {
-    color: tokens.colorNeutralForegroundOnBrand,
+  connectionConnectingIdle: {
+    color: '#CA6C1D',
   },
-  statusPending: {
-    color: '#FFE7B0',
-    animation: 'pulse 1.5s ease-in-out infinite',
-  },
-  statusSuccess: {
-    color: '#C6F5DE',
-    animation: 'successPop 0.3s ease-out',
-  },
-  statusError: {
-    color: '#FFD4D4',
-    animation: 'errorShake 0.4s ease-out',
-  },
-  connectionConnected: {
+  connectionConnectedActive: {
     color: '#C6F5DE',
   },
-  connectionDisconnected: {
+  connectionDisconnectedActive: {
     color: '#FFD4D4',
   },
-  connectionConnecting: {
+  connectionConnectingActive: {
     color: '#FFE7B0',
-    animation: 'spin 1s linear infinite',
   },
-  connectionLabel: {
-    fontSize: '11px',
-    letterSpacing: '0.1px',
+  success: {
+    backgroundColor: '#2D7D46',
+    color: '#FFFFFF',
+    ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
+  },
+  error: {
+    backgroundColor: '#C4314B',
+    color: '#FFFFFF',
+    ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
+  },
+  info: {
+    backgroundColor: '#CA6C1D',
+    color: '#FFFFFF',
+    ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
+  },
+  running: {
+    backgroundColor: '#CA6C1D',
+    color: '#FFFFFF',
+    ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
   },
 });
 
@@ -105,46 +112,32 @@ const getSubmissionStatusInfo = (status: SubmissionStatus) => {
   }
 };
 
-const getConnectionStatusInfo = (status: ConnectionStatus) => {
+const getConnectionStatusInfo = (status: ConnectionStatus, isActive: boolean) => {
+  const suffix = isActive ? 'Active' : 'Idle';
   switch (status) {
     case 'connected':
-      return { icon: CloudCheckmarkRegular, className: 'connectionConnected' as const };
+      return { icon: CloudCheckmarkRegular, className: `connectionConnected${suffix}` as const };
     case 'disconnected':
-      return { icon: CloudDismissRegular, className: 'connectionDisconnected' as const };
+      return { icon: CloudDismissRegular, className: `connectionDisconnected${suffix}` as const };
     case 'connecting':
-      return { icon: CloudSyncRegular, className: 'connectionConnecting' as const };
-  }
-};
-
-const getCompileStatusInfo = (status: 'idle' | 'compiling' | 'success' | 'error') => {
-  switch (status) {
-    case 'idle':
-      return { text: '就绪', className: 'statusIdle' as const };
-    case 'compiling':
-      return { text: '编译中...', className: 'statusPending' as const };
-    case 'success':
-      return { text: '编译完成', className: 'statusSuccess' as const };
-    case 'error':
-      return { text: '编译错误', className: 'statusError' as const };
+      return { icon: CloudSyncRegular, className: `connectionConnecting${suffix}` as const };
   }
 };
 
 export const StatusBar: React.FC = () => {
   const styles = useStyles();
   const {
+    selectedProblem,
     currentLanguage,
-    compileStatus,
-    lastRunTime,
-    submissionStatus,
     connectionStatus,
     userInfo,
+    submissionStatus,
+    notification,
+    notify,
   } = useAppStore();
 
-  const submissionInfo = getSubmissionStatusInfo(submissionStatus);
-  const connectionInfo = getConnectionStatusInfo(connectionStatus);
-  const compileInfo = getCompileStatusInfo(compileStatus);
-
-  const SubmissionIcon = submissionInfo.icon;
+  const isActive = selectedProblem !== null;
+  const connectionInfo = getConnectionStatusInfo(connectionStatus, isActive);
   const ConnectionIcon = connectionInfo.icon;
   const connectionStatusText = connectionStatus === 'connected'
     ? '已连接'
@@ -152,60 +145,67 @@ export const StatusBar: React.FC = () => {
     ? '连接中'
     : '已断开';
 
+  const submissionInfo = getSubmissionStatusInfo(submissionStatus);
+
+  const handleRunClick = () => {
+    notify('running', '运行中');
+    setTimeout(() => {
+      notify('success', '提交通过');
+    }, 1000);
+  };
+
+  const isRunning = notification?.status === 'running';
+
+  const getContainerClassName = () => {
+    if (notification) {
+      return mergeClasses(styles.container, styles[notification.status]);
+    }
+    return mergeClasses(styles.container, isActive ? styles.active : styles.idle);
+  };
+
+  const displayText = notification ? notification.message : submissionInfo.text;
+
   return (
-    <footer className={styles.container} role="contentinfo" aria-label="状态栏">
-      <div className={styles.section}>
-        {/* Language */}
-        <Tooltip content="当前语言" relationship="label">
-          <div className={styles.item}>
-            <CodeRegular className={styles.icon} />
-            <Text className={styles.text}>{currentLanguage}</Text>
-          </div>
-        </Tooltip>
-
-        {/* Compile Status */}
-        <Tooltip content="编译状态" relationship="label">
-          <div className={mergeClasses(styles.item, styles[compileInfo.className])}>
-            <PlayCircleRegular className={styles.icon} />
-            <Text className={styles.text}>{compileInfo.text}</Text>
-          </div>
-        </Tooltip>
-
-        {/* Last Run Time */}
-        {lastRunTime && (
-          <Tooltip content="上次运行时间" relationship="label">
-            <div className={styles.item}>
-              <ClockRegular className={styles.icon} />
-              <Text className={styles.text}>{lastRunTime}</Text>
-            </div>
-          </Tooltip>
-        )}
+    <footer
+      className={getContainerClassName()}
+      role="contentinfo"
+      aria-label="状态栏"
+    >
+      <div className={styles.leftSection}>
+        <Text>{displayText}</Text>
       </div>
 
-      <div className={styles.section}>
-        {/* Submission Status */}
-        <Tooltip content="提交状态" relationship="label">
-          <div className={mergeClasses(styles.item, styles[submissionInfo.className])}>
-            <SubmissionIcon className={styles.icon} />
-            <Text weight="semibold" className={styles.text}>{submissionInfo.text}</Text>
-          </div>
-        </Tooltip>
+      <div className={styles.rightSection}>
+        {isActive && (
+          <>
+            <StatusBarItem
+              icon={<CodeRegular />}
+              text={currentLanguage}
+              tooltip="当前语言"
+            />
 
-        {/* Connection Status */}
-        <Tooltip content={`服务器：${connectionStatusText}`} relationship="label">
-          <div className={mergeClasses(styles.item, styles[connectionInfo.className])}>
-            <ConnectionIcon className={styles.icon} />
-            <Text className={mergeClasses(styles.text, styles.connectionLabel)}>{connectionStatusText}</Text>
-          </div>
-        </Tooltip>
+            <StatusBarItem
+              icon={isRunning ? <Spinner size="tiny" /> : <PlayRegular />}
+              text="运行"
+              tooltip="运行代码"
+              onClick={handleRunClick}
+              disabled={isRunning}
+            />
+          </>
+        )}
 
-        {/* User Info */}
-        <Tooltip content={userInfo?.name || '游客'} relationship="label">
-          <div className={styles.item}>
-            <PersonRegular className={styles.icon} />
-            <Text className={styles.text}>{userInfo?.name || '游客'}</Text>
-          </div>
-        </Tooltip>
+        <StatusBarItem
+          icon={<ConnectionIcon />}
+          text={connectionStatusText}
+          tooltip={`服务器：${connectionStatusText}`}
+          className={styles[connectionInfo.className]}
+        />
+
+        <StatusBarItem
+          icon={<PersonRegular />}
+          text={userInfo?.name || '游客'}
+          tooltip={userInfo?.name || '游客'}
+        />
       </div>
     </footer>
   );
