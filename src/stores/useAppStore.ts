@@ -6,10 +6,20 @@ export type SubmissionStatus = 'idle' | 'pending' | 'accepted' | 'wrong-answer' 
 
 export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting';
 
+export interface SelectedProblem {
+  id: number;
+  title: string;
+}
+
 interface AppState {
   // Navigation
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
+
+  // Selected Problem (for editor)
+  selectedProblem: SelectedProblem | null;
+  setSelectedProblem: (problem: SelectedProblem | null) => void;
+  openProblemInEditor: (problem: SelectedProblem) => void;
 
   // Status Bar Info
   currentLanguage: string;
@@ -40,6 +50,11 @@ export const useAppStore = create<AppState>((set) => ({
   activeTab: 'explorer',
   setActiveTab: (tab) => set({ activeTab: tab }),
 
+  // Selected Problem (for editor)
+  selectedProblem: null,
+  setSelectedProblem: (problem) => set({ selectedProblem: problem }),
+  openProblemInEditor: (problem) => set({ selectedProblem: problem, activeTab: 'editor' }),
+
   // Status Bar Info
   currentLanguage: 'C++',
   setCurrentLanguage: (lang) => set({ currentLanguage: lang }),
@@ -56,7 +71,7 @@ export const useAppStore = create<AppState>((set) => ({
   connectionStatus: 'connected',
   setConnectionStatus: (status) => set({ connectionStatus: status }),
 
-  userInfo: { name: 'Guest' },
+  userInfo: { name: '游客' },
   setUserInfo: (user) => set({ userInfo: user }),
 
   // Theme

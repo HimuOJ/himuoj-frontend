@@ -4,6 +4,7 @@ import {
   shorthands,
   Text,
   Tooltip,
+  mergeClasses,
 } from '@fluentui/react-components';
 import {
   CircleRegular,
@@ -33,74 +34,74 @@ const useStyles = makeStyles({
     paddingRight: '12px',
     boxSizing: 'border-box',
     fontSize: '12px',
-    ...shorthands.borderTop('1px', 'solid', tokens.colorNeutralStroke3),
+    ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
     transition: 'background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s ease',
   },
   section: {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
+    gap: '10px',
   },
   item: {
     display: 'flex',
     alignItems: 'center',
     gap: '6px',
     cursor: 'default',
-    transition: 'color 0.3s ease, transform 0.2s ease',
+    transition: 'color 0.2s ease',
     ':hover': {
-      transform: 'translateY(-1px)',
+      opacity: 0.8,
     },
   },
   icon: {
     fontSize: '14px',
-    transition: 'transform 0.3s ease, color 0.3s ease',
+    transition: 'color 0.2s ease',
+  },
+  text: {
+    color: 'inherit',
   },
   statusIdle: {
     color: tokens.colorNeutralForegroundOnBrand,
-    transition: 'color 0.3s ease',
   },
   statusPending: {
-    color: tokens.colorPaletteYellowForeground1,
-    transition: 'color 0.3s ease',
+    color: '#FFE7B0',
     animation: 'pulse 1.5s ease-in-out infinite',
   },
   statusSuccess: {
-    color: tokens.colorPaletteGreenForeground1,
-    transition: 'color 0.3s ease',
+    color: '#C6F5DE',
     animation: 'successPop 0.3s ease-out',
   },
   statusError: {
-    color: tokens.colorPaletteRedForeground1,
-    transition: 'color 0.3s ease',
+    color: '#FFD4D4',
     animation: 'errorShake 0.4s ease-out',
   },
   connectionConnected: {
-    color: tokens.colorPaletteGreenForeground3,
-    transition: 'color 0.3s ease',
+    color: '#C6F5DE',
   },
   connectionDisconnected: {
-    color: tokens.colorPaletteRedForeground3,
-    transition: 'color 0.3s ease',
+    color: '#FFD4D4',
   },
   connectionConnecting: {
-    color: tokens.colorPaletteYellowForeground3,
-    transition: 'color 0.3s ease',
+    color: '#FFE7B0',
     animation: 'spin 1s linear infinite',
+  },
+  connectionLabel: {
+    fontSize: '11px',
+    letterSpacing: '0.1px',
   },
 });
 
 const getSubmissionStatusInfo = (status: SubmissionStatus) => {
   switch (status) {
     case 'idle':
-      return { text: 'Ready', icon: CircleRegular, className: 'statusIdle' as const };
+      return { text: '就绪', icon: CircleRegular, className: 'statusIdle' as const };
     case 'pending':
-      return { text: 'Pending', icon: ClockRegular, className: 'statusPending' as const };
+      return { text: '评测中', icon: ClockRegular, className: 'statusPending' as const };
     case 'accepted':
-      return { text: 'Accepted', icon: CheckmarkCircleFilled, className: 'statusSuccess' as const };
+      return { text: '通过', icon: CheckmarkCircleFilled, className: 'statusSuccess' as const };
     case 'wrong-answer':
-      return { text: 'Wrong Answer', icon: DismissCircleFilled, className: 'statusError' as const };
+      return { text: '答案错误', icon: DismissCircleFilled, className: 'statusError' as const };
     case 'error':
-      return { text: 'Error', icon: ErrorCircleFilled, className: 'statusError' as const };
+      return { text: '系统错误', icon: ErrorCircleFilled, className: 'statusError' as const };
   }
 };
 
@@ -112,6 +113,19 @@ const getConnectionStatusInfo = (status: ConnectionStatus) => {
       return { icon: CloudDismissRegular, className: 'connectionDisconnected' as const };
     case 'connecting':
       return { icon: CloudSyncRegular, className: 'connectionConnecting' as const };
+  }
+};
+
+const getCompileStatusInfo = (status: 'idle' | 'compiling' | 'success' | 'error') => {
+  switch (status) {
+    case 'idle':
+      return { text: '就绪', className: 'statusIdle' as const };
+    case 'compiling':
+      return { text: '编译中...', className: 'statusPending' as const };
+    case 'success':
+      return { text: '编译完成', className: 'statusSuccess' as const };
+    case 'error':
+      return { text: '编译错误', className: 'statusError' as const };
   }
 };
 
@@ -128,43 +142,41 @@ export const StatusBar: React.FC = () => {
 
   const submissionInfo = getSubmissionStatusInfo(submissionStatus);
   const connectionInfo = getConnectionStatusInfo(connectionStatus);
+  const compileInfo = getCompileStatusInfo(compileStatus);
 
   const SubmissionIcon = submissionInfo.icon;
   const ConnectionIcon = connectionInfo.icon;
-
-  const compileText = compileStatus === 'idle'
-    ? 'Ready'
-    : compileStatus === 'compiling'
-    ? 'Compiling...'
-    : compileStatus === 'success'
-    ? 'Compiled'
-    : 'Compile Error';
+  const connectionStatusText = connectionStatus === 'connected'
+    ? '已连接'
+    : connectionStatus === 'connecting'
+    ? '连接中'
+    : '已断开';
 
   return (
-    <footer className={styles.container} role="contentinfo" aria-label="Status Bar">
+    <footer className={styles.container} role="contentinfo" aria-label="状态栏">
       <div className={styles.section}>
         {/* Language */}
-        <Tooltip content="Current Language" relationship="label">
+        <Tooltip content="当前语言" relationship="label">
           <div className={styles.item}>
             <CodeRegular className={styles.icon} />
-            <Text>{currentLanguage}</Text>
+            <Text className={styles.text}>{currentLanguage}</Text>
           </div>
         </Tooltip>
 
         {/* Compile Status */}
-        <Tooltip content="Compile Status" relationship="label">
-          <div className={styles.item}>
+        <Tooltip content="编译状态" relationship="label">
+          <div className={mergeClasses(styles.item, styles[compileInfo.className])}>
             <PlayCircleRegular className={styles.icon} />
-            <Text>{compileText}</Text>
+            <Text className={styles.text}>{compileInfo.text}</Text>
           </div>
         </Tooltip>
 
         {/* Last Run Time */}
         {lastRunTime && (
-          <Tooltip content="Last Run Time" relationship="label">
+          <Tooltip content="上次运行时间" relationship="label">
             <div className={styles.item}>
               <ClockRegular className={styles.icon} />
-              <Text>{lastRunTime}</Text>
+              <Text className={styles.text}>{lastRunTime}</Text>
             </div>
           </Tooltip>
         )}
@@ -172,25 +184,26 @@ export const StatusBar: React.FC = () => {
 
       <div className={styles.section}>
         {/* Submission Status */}
-        <Tooltip content="Submission Status" relationship="label">
-          <div className={`${styles.item} ${styles[submissionInfo.className]}`}>
+        <Tooltip content="提交状态" relationship="label">
+          <div className={mergeClasses(styles.item, styles[submissionInfo.className])}>
             <SubmissionIcon className={styles.icon} />
-            <Text weight="semibold">{submissionInfo.text}</Text>
+            <Text weight="semibold" className={styles.text}>{submissionInfo.text}</Text>
           </div>
         </Tooltip>
 
         {/* Connection Status */}
-        <Tooltip content={`Server: ${connectionStatus}`} relationship="label">
-          <div className={`${styles.item} ${styles[connectionInfo.className]}`}>
+        <Tooltip content={`服务器：${connectionStatusText}`} relationship="label">
+          <div className={mergeClasses(styles.item, styles[connectionInfo.className])}>
             <ConnectionIcon className={styles.icon} />
+            <Text className={mergeClasses(styles.text, styles.connectionLabel)}>{connectionStatusText}</Text>
           </div>
         </Tooltip>
 
         {/* User Info */}
-        <Tooltip content={userInfo?.name || 'Guest'} relationship="label">
+        <Tooltip content={userInfo?.name || '游客'} relationship="label">
           <div className={styles.item}>
             <PersonRegular className={styles.icon} />
-            <Text>{userInfo?.name || 'Guest'}</Text>
+            <Text className={styles.text}>{userInfo?.name || '游客'}</Text>
           </div>
         </Tooltip>
       </div>

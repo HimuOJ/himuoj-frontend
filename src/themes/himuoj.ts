@@ -32,5 +32,14 @@ export const himuojDarkTheme: Theme = {
   ...createDarkTheme(himuojBrand),
 };
 
+const fontFamilyBase = '"IBM Plex Sans SC", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif';
+const fontFamilyMonospace = '"JetBrains Mono", "Cascadia Code", "Fira Code", Consolas, "Courier New", monospace';
+
+himuojLightTheme.fontFamilyBase = fontFamilyBase;
+himuojLightTheme.fontFamilyMonospace = fontFamilyMonospace;
+
+himuojDarkTheme.fontFamilyBase = fontFamilyBase;
+himuojDarkTheme.fontFamilyMonospace = fontFamilyMonospace;
+
 himuojDarkTheme.colorBrandForeground1 = himuojBrand[110];
- himuojDarkTheme.colorBrandForeground2 = himuojBrand[120];
+himuojDarkTheme.colorBrandForeground2 = himuojBrand[120];

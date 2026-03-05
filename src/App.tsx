@@ -24,6 +24,8 @@ const useStyles = makeStyles({
     flex: 1,
     minHeight: 0,
     overflow: 'hidden',
+    position: 'relative',
+    zIndex: 1,
   },
   themeTransitionOverlay: {
     position: 'fixed',
@@ -70,9 +72,14 @@ function App() {
     }
   }, [isDarkMode]);
 
+  useEffect(() => {
+    document.body.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
+
   return (
     <FluentProvider theme={isDarkMode ? himuojDarkTheme : himuojLightTheme}>
       <div ref={appRef} className={styles.app}>
+        <div className="app-bg" aria-hidden="true" />
         <div className={styles.mainContainer}>
           <ActivityBar />
           <Workspace />
