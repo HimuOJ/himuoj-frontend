@@ -24,6 +24,8 @@ import { useAppStore, type SubmissionStatus, type ConnectionStatus } from '../..
 
 const useStyles = makeStyles({
   container: {
+    position: 'relative',
+    zIndex: 2,
     height: '28px',
     width: '100%',
     display: 'flex',
