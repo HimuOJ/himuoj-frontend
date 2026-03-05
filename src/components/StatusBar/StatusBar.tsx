@@ -80,6 +80,10 @@ const useStyles = makeStyles({
     paddingRight: '8px',
     fontSize: '11px',
     color: tokens.colorNeutralForegroundOnBrand,
+    ':hover': {
+      color: tokens.colorNeutralForegroundOnBrand,
+      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    },
   },
   connectionConnectedIdle: {
     color: '#2D7D46',
