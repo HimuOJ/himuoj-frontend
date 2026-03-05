@@ -79,14 +79,24 @@ const useStyles = makeStyles({
     paddingLeft: '8px',
     paddingRight: '8px',
     fontSize: '11px',
+    color: tokens.colorNeutralForegroundOnBrand,
   },
-  connectionConnected: {
+  connectionConnectedIdle: {
+    color: '#2D7D46',
+  },
+  connectionDisconnectedIdle: {
+    color: '#C4314B',
+  },
+  connectionConnectingIdle: {
+    color: '#CA6C1D',
+  },
+  connectionConnectedActive: {
     color: '#C6F5DE',
   },
-  connectionDisconnected: {
+  connectionDisconnectedActive: {
     color: '#FFD4D4',
   },
-  connectionConnecting: {
+  connectionConnectingActive: {
     color: '#FFE7B0',
   },
 });
@@ -106,14 +116,15 @@ const getSubmissionStatusInfo = (status: SubmissionStatus) => {
   }
 };
 
-const getConnectionStatusInfo = (status: ConnectionStatus) => {
+const getConnectionStatusInfo = (status: ConnectionStatus, isActive: boolean) => {
+  const suffix = isActive ? 'Active' : 'Idle';
   switch (status) {
     case 'connected':
-      return { icon: CloudCheckmarkRegular, className: 'connectionConnected' as const };
+      return { icon: CloudCheckmarkRegular, className: `connectionConnected${suffix}` as const };
     case 'disconnected':
-      return { icon: CloudDismissRegular, className: 'connectionDisconnected' as const };
+      return { icon: CloudDismissRegular, className: `connectionDisconnected${suffix}` as const };
     case 'connecting':
-      return { icon: CloudSyncRegular, className: 'connectionConnecting' as const };
+      return { icon: CloudSyncRegular, className: `connectionConnecting${suffix}` as const };
   }
 };
 
@@ -128,7 +139,7 @@ export const StatusBar: React.FC = () => {
   } = useAppStore();
 
   const isActive = selectedProblem !== null;
-  const connectionInfo = getConnectionStatusInfo(connectionStatus);
+  const connectionInfo = getConnectionStatusInfo(connectionStatus, isActive);
   const ConnectionIcon = connectionInfo.icon;
   const connectionStatusText = connectionStatus === 'connected'
     ? '已连接'
