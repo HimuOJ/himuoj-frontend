@@ -5,6 +5,7 @@ import {
   Text,
   Tooltip,
   mergeClasses,
+  Button,
 } from '@fluentui/react-components';
 import {
   CircleRegular,
@@ -16,7 +17,7 @@ import {
   CloudSyncRegular,
   PersonRegular,
   CodeRegular,
-  PlayCircleRegular,
+  PlayRegular,
   ErrorCircleFilled,
 } from '@fluentui/react-icons';
 import { useAppStore, type SubmissionStatus, type ConnectionStatus } from '../../stores/useAppStore';
@@ -25,8 +26,6 @@ const useStyles = makeStyles({
   container: {
     height: '28px',
     width: '100%',
-    backgroundColor: tokens.colorBrandBackground,
-    color: tokens.colorNeutralForegroundOnBrand,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -34,10 +33,24 @@ const useStyles = makeStyles({
     paddingRight: '12px',
     boxSizing: 'border-box',
     fontSize: '12px',
-    ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
-    transition: 'background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s ease',
+    ...shorthands.borderTop('1px', 'solid', tokens.colorNeutralStroke2),
+    transition: 'background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.5s ease',
   },
-  section: {
+  idle: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    color: tokens.colorNeutralForeground1,
+  },
+  active: {
+    backgroundColor: tokens.colorBrandBackground,
+    color: tokens.colorNeutralForegroundOnBrand,
+    ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
+  },
+  leftSection: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  rightSection: {
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
@@ -47,32 +60,23 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '6px',
     cursor: 'default',
-    transition: 'color 0.2s ease',
+    transition: 'opacity 0.3s ease',
     ':hover': {
       opacity: 0.8,
     },
   },
   icon: {
     fontSize: '14px',
-    transition: 'color 0.2s ease',
   },
   text: {
     color: 'inherit',
   },
-  statusIdle: {
-    color: tokens.colorNeutralForegroundOnBrand,
-  },
-  statusPending: {
-    color: '#FFE7B0',
-    animation: 'pulse 1.5s ease-in-out infinite',
-  },
-  statusSuccess: {
-    color: '#C6F5DE',
-    animation: 'successPop 0.3s ease-out',
-  },
-  statusError: {
-    color: '#FFD4D4',
-    animation: 'errorShake 0.4s ease-out',
+  runButton: {
+    minWidth: 'auto',
+    height: '20px',
+    paddingLeft: '8px',
+    paddingRight: '8px',
+    fontSize: '11px',
   },
   connectionConnected: {
     color: '#C6F5DE',
@@ -82,11 +86,6 @@ const useStyles = makeStyles({
   },
   connectionConnecting: {
     color: '#FFE7B0',
-    animation: 'spin 1s linear infinite',
-  },
-  connectionLabel: {
-    fontSize: '11px',
-    letterSpacing: '0.1px',
   },
 });
 
@@ -116,35 +115,18 @@ const getConnectionStatusInfo = (status: ConnectionStatus) => {
   }
 };
 
-const getCompileStatusInfo = (status: 'idle' | 'compiling' | 'success' | 'error') => {
-  switch (status) {
-    case 'idle':
-      return { text: '就绪', className: 'statusIdle' as const };
-    case 'compiling':
-      return { text: '编译中...', className: 'statusPending' as const };
-    case 'success':
-      return { text: '编译完成', className: 'statusSuccess' as const };
-    case 'error':
-      return { text: '编译错误', className: 'statusError' as const };
-  }
-};
-
 export const StatusBar: React.FC = () => {
   const styles = useStyles();
   const {
+    selectedProblem,
     currentLanguage,
-    compileStatus,
-    lastRunTime,
-    submissionStatus,
     connectionStatus,
     userInfo,
+    submissionStatus,
   } = useAppStore();
 
-  const submissionInfo = getSubmissionStatusInfo(submissionStatus);
+  const isActive = selectedProblem !== null;
   const connectionInfo = getConnectionStatusInfo(connectionStatus);
-  const compileInfo = getCompileStatusInfo(compileStatus);
-
-  const SubmissionIcon = submissionInfo.icon;
   const ConnectionIcon = connectionInfo.icon;
   const connectionStatusText = connectionStatus === 'connected'
     ? '已连接'
@@ -152,54 +134,48 @@ export const StatusBar: React.FC = () => {
     ? '连接中'
     : '已断开';
 
+  const submissionInfo = getSubmissionStatusInfo(submissionStatus);
+
   return (
-    <footer className={styles.container} role="contentinfo" aria-label="状态栏">
-      <div className={styles.section}>
-        {/* Language */}
-        <Tooltip content="当前语言" relationship="label">
-          <div className={styles.item}>
-            <CodeRegular className={styles.icon} />
-            <Text className={styles.text}>{currentLanguage}</Text>
-          </div>
-        </Tooltip>
-
-        {/* Compile Status */}
-        <Tooltip content="编译状态" relationship="label">
-          <div className={mergeClasses(styles.item, styles[compileInfo.className])}>
-            <PlayCircleRegular className={styles.icon} />
-            <Text className={styles.text}>{compileInfo.text}</Text>
-          </div>
-        </Tooltip>
-
-        {/* Last Run Time */}
-        {lastRunTime && (
-          <Tooltip content="上次运行时间" relationship="label">
-            <div className={styles.item}>
-              <ClockRegular className={styles.icon} />
-              <Text className={styles.text}>{lastRunTime}</Text>
-            </div>
-          </Tooltip>
-        )}
+    <footer
+      className={mergeClasses(styles.container, isActive ? styles.active : styles.idle)}
+      role="contentinfo"
+      aria-label="状态栏"
+    >
+      <div className={styles.leftSection}>
+        <Text className={styles.text}>{submissionInfo.text}</Text>
       </div>
 
-      <div className={styles.section}>
-        {/* Submission Status */}
-        <Tooltip content="提交状态" relationship="label">
-          <div className={mergeClasses(styles.item, styles[submissionInfo.className])}>
-            <SubmissionIcon className={styles.icon} />
-            <Text weight="semibold" className={styles.text}>{submissionInfo.text}</Text>
-          </div>
-        </Tooltip>
+      <div className={styles.rightSection}>
+        {isActive && (
+          <>
+            <Tooltip content="当前语言" relationship="label">
+              <div className={styles.item}>
+                <CodeRegular className={styles.icon} />
+                <Text className={styles.text}>{currentLanguage}</Text>
+              </div>
+            </Tooltip>
 
-        {/* Connection Status */}
+            <Tooltip content="运行代码" relationship="label">
+              <Button
+                appearance="transparent"
+                icon={<PlayRegular />}
+                size="small"
+                className={styles.runButton}
+              >
+                运行
+              </Button>
+            </Tooltip>
+          </>
+        )}
+
         <Tooltip content={`服务器：${connectionStatusText}`} relationship="label">
           <div className={mergeClasses(styles.item, styles[connectionInfo.className])}>
             <ConnectionIcon className={styles.icon} />
-            <Text className={mergeClasses(styles.text, styles.connectionLabel)}>{connectionStatusText}</Text>
+            <Text className={styles.text}>{connectionStatusText}</Text>
           </div>
         </Tooltip>
 
-        {/* User Info */}
         <Tooltip content={userInfo?.name || '游客'} relationship="label">
           <div className={styles.item}>
             <PersonRegular className={styles.icon} />
