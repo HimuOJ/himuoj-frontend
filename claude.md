@@ -21,7 +21,7 @@ The frontend and contracts repositories are peer Git submodules. Although the fr
 | State/UI Local | Zustand + TanStack Query |
 | Routing | React Router |
 | Auth token storage | `localStorage` (key: `himuoj_access_token`) |
-| UI Library | @fluentui/react |
+| UI Library | @fluentui/react-components (v9) |
 
 ## Project Structure
 
