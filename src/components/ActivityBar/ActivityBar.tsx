@@ -93,7 +93,7 @@ const useStyles = makeStyles({
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    borderRadius: '8px',
+    borderRadius: '4px',
     transition: 'background-color 0.2s ease, color 0.2s ease, transform 0.18s ease',
     backgroundColor: 'transparent',
     color: tokens.colorNeutralForeground2,

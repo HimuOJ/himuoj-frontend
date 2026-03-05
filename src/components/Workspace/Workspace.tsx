@@ -140,7 +140,7 @@ const useStyles = makeStyles({
     '& code': {
       backgroundColor: tokens.colorNeutralBackground3,
       padding: '2px 2px',
-      borderRadius: '3px',
+      borderRadius: '4px',
       fontFamily: 'monospace',
     },
     '& pre': {
@@ -191,7 +191,7 @@ const useStyles = makeStyles({
   defaultPre: {
     backgroundColor: tokens.colorNeutralBackground3,
     padding: '12px',
-    borderRadius: '6px',
+    borderRadius: '4px',
     overflow: 'auto',
     marginTop: '8px',
     marginBottom: '8px',
@@ -219,7 +219,7 @@ const useStyles = makeStyles({
   },
   codeEditor: {
     background: tokens.colorNeutralBackground2,
-    ...shorthands.borderRadius('8px'),
+    ...shorthands.borderRadius('4px'),
     ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
     padding: '18px',
     fontFamily: '"JetBrains Mono", "Cascadia Code", "Fira Code", Consolas, "Courier New", monospace',
@@ -233,7 +233,7 @@ const useStyles = makeStyles({
     background: tokens.colorNeutralBackground2,
     ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
     padding: '18px',
-    borderRadius: '8px',
+    borderRadius: '4px',
     position: 'relative',
     overflow: 'hidden',
     cursor: 'pointer',
@@ -307,7 +307,7 @@ const useStyles = makeStyles({
     display: 'inline-flex',
     alignItems: 'center',
     padding: '4px 10px',
-    borderRadius: '999px',
+    borderRadius: '4px',
     fontSize: '12px',
     color: tokens.colorNeutralForeground2,
     background: tokens.colorNeutralBackground2,
@@ -324,7 +324,7 @@ const useStyles = makeStyles({
   },
   caseField: {
     padding: '10px 12px',
-    borderRadius: '10px',
+    borderRadius: '4px',
     background: tokens.colorNeutralBackground2,
     ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
   },
@@ -348,7 +348,7 @@ const useStyles = makeStyles({
   },
   metricCard: {
     padding: '12px',
-    borderRadius: '10px',
+    borderRadius: '4px',
     background: tokens.colorNeutralBackground2,
     ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
   },
@@ -387,7 +387,7 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '12px 14px',
-    borderRadius: '10px',
+    borderRadius: '4px',
     background: tokens.colorNeutralBackground2,
     ...shorthands.border('1px', 'solid', tokens.colorNeutralStroke2),
     '@media (max-width: 680px)': {

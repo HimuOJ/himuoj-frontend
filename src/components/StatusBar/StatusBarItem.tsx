@@ -9,7 +9,7 @@ const useStyles = makeStyles({
     paddingLeft: '6px',
     paddingRight: '6px',
     height: '20px',
-    borderRadius: '3px',
+    borderRadius: '4px',
     transition: 'opacity 0.3s ease, background-color 0.2s ease',
     cursor: 'default',
   },
