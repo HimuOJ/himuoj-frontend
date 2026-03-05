@@ -3,9 +3,7 @@ import {
   tokens,
   shorthands,
   Text,
-  Tooltip,
   mergeClasses,
-  Button,
 } from '@fluentui/react-components';
 import {
   CircleRegular,
@@ -21,6 +19,7 @@ import {
   ErrorCircleFilled,
 } from '@fluentui/react-icons';
 import { useAppStore, type SubmissionStatus, type ConnectionStatus } from '../../stores/useAppStore';
+import { StatusBarItem } from './StatusBarItem';
 
 const useStyles = makeStyles({
   container: {
@@ -56,34 +55,6 @@ const useStyles = makeStyles({
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-  },
-  item: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    cursor: 'default',
-    transition: 'opacity 0.3s ease',
-    ':hover': {
-      opacity: 0.8,
-    },
-  },
-  icon: {
-    fontSize: '14px',
-  },
-  text: {
-    color: 'inherit',
-  },
-  runButton: {
-    minWidth: 'auto',
-    height: '20px',
-    paddingLeft: '8px',
-    paddingRight: '8px',
-    fontSize: '11px',
-    color: tokens.colorNeutralForegroundOnBrand,
-    ':hover': {
-      color: tokens.colorNeutralForegroundOnBrand,
-      backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    },
   },
   connectionConnectedIdle: {
     color: '#2D7D46',
@@ -160,45 +131,39 @@ export const StatusBar: React.FC = () => {
       aria-label="状态栏"
     >
       <div className={styles.leftSection}>
-        <Text className={styles.text}>{submissionInfo.text}</Text>
+        <Text>{submissionInfo.text}</Text>
       </div>
 
       <div className={styles.rightSection}>
         {isActive && (
           <>
-            <Tooltip content="当前语言" relationship="label">
-              <div className={styles.item}>
-                <CodeRegular className={styles.icon} />
-                <Text className={styles.text}>{currentLanguage}</Text>
-              </div>
-            </Tooltip>
+            <StatusBarItem
+              icon={<CodeRegular />}
+              text={currentLanguage}
+              tooltip="当前语言"
+            />
 
-            <Tooltip content="运行代码" relationship="label">
-              <Button
-                appearance="transparent"
-                icon={<PlayRegular />}
-                size="small"
-                className={styles.runButton}
-              >
-                运行
-              </Button>
-            </Tooltip>
+            <StatusBarItem
+              icon={<PlayRegular />}
+              text="运行"
+              tooltip="运行代码"
+              onClick={() => console.log('Run code')}
+            />
           </>
         )}
 
-        <Tooltip content={`服务器：${connectionStatusText}`} relationship="label">
-          <div className={mergeClasses(styles.item, styles[connectionInfo.className])}>
-            <ConnectionIcon className={styles.icon} />
-            <Text className={styles.text}>{connectionStatusText}</Text>
-          </div>
-        </Tooltip>
+        <StatusBarItem
+          icon={<ConnectionIcon />}
+          text={connectionStatusText}
+          tooltip={`服务器：${connectionStatusText}`}
+          className={styles[connectionInfo.className]}
+        />
 
-        <Tooltip content={userInfo?.name || '游客'} relationship="label">
-          <div className={styles.item}>
-            <PersonRegular className={styles.icon} />
-            <Text className={styles.text}>{userInfo?.name || '游客'}</Text>
-          </div>
-        </Tooltip>
+        <StatusBarItem
+          icon={<PersonRegular />}
+          text={userInfo?.name || '游客'}
+          tooltip={userInfo?.name || '游客'}
+        />
       </div>
     </footer>
   );
