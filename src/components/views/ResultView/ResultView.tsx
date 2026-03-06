@@ -3,11 +3,10 @@ import { useState, useEffect } from 'react';
 import { getLatestSubmissionMock, listSubmissionTestCaseResultsMock } from '../../../api/mock';
 import { formatMemoryFromKb, formatDateTime, JUDGE_STATUS_CONFIG } from '../../../utils';
 import type { components as SubmissionComponents } from '../../../api/submissions.gen';
+import { useAppStore } from '../../../stores/useAppStore';
 
 type SubmissionDetail = SubmissionComponents['schemas']['SubmissionDetail'];
 type TestCaseResultDetail = SubmissionComponents['schemas']['TestCaseResultDetail'];
-
-const DEFAULT_PROBLEM_ID = 1;
 
 const useStyles = makeStyles({
   content: {
@@ -135,6 +134,7 @@ const useStyles = makeStyles({
 
 export const ResultView: React.FC = () => {
   const styles = useStyles();
+  const { selectedProblem } = useAppStore();
   const [loading, setLoading] = useState(true);
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [testCaseResults, setTestCaseResults] = useState<TestCaseResultDetail[]>([]);
@@ -143,9 +143,16 @@ export const ResultView: React.FC = () => {
     let mounted = true;
 
     const loadResult = async () => {
+      if (!selectedProblem) {
+        setSubmission(null);
+        setTestCaseResults([]);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       try {
-        const latestSubmission = await getLatestSubmissionMock(DEFAULT_PROBLEM_ID);
+        const latestSubmission = await getLatestSubmissionMock(selectedProblem.id);
         if (!mounted) return;
         setSubmission(latestSubmission);
 
@@ -166,7 +173,7 @@ export const ResultView: React.FC = () => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [selectedProblem]);
 
   const acceptedCount = testCaseResults.filter((item) => item.status === 'Accepted').length;
 
@@ -174,7 +181,7 @@ export const ResultView: React.FC = () => {
     <div className={styles.content}>
       <Title1>提交结果</Title1>
       <Text block className={styles.sectionText}>
-        最新提交的评测状态、资源消耗与测试点明细
+        当前题目最新提交的评测状态、资源消耗与测试点明细
       </Text>
       <div className={`${styles.listStack} ${styles.staggerContainer}`}>
         {loading && (

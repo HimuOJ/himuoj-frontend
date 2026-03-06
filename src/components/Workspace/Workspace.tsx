@@ -1,7 +1,7 @@
 import { makeStyles, Title1 } from '@fluentui/react-components';
-import { useAppStore } from '../../stores/useAppStore';
+import { useAppStore, type PrimaryTabType } from '../../stores/useAppStore';
 import { useEffect, useState, useRef } from 'react';
-import { ExplorerView, EditorView, TestcaseView, ResultView, SettingsView } from '../views';
+import { ExplorerView, ProblemView, SettingsView } from '../views';
 
 const PAGE_ENTER_DURATION_MS = 420;
 const PAGE_EXIT_DURATION_MS = 320;
@@ -152,41 +152,37 @@ type PageDirection = 'forward' | 'backward';
 
 interface PageState {
   id: number;
-  tab: string;
+  tab: PrimaryTabType;
   state: AnimationState;
   direction: PageDirection;
 }
 
-const tabLabels: Record<string, string> = {
+const tabLabels: Record<PrimaryTabType, string> = {
   explorer: '题库',
-  editor: '编辑器',
-  testcase: '测试点',
-  result: '结果',
+  problem: '题面',
   settings: '设置',
 };
 
-const ViewComponents: Record<string, React.FC> = {
+const ViewComponents: Record<PrimaryTabType, React.FC> = {
   explorer: ExplorerView,
-  editor: EditorView,
-  testcase: TestcaseView,
-  result: ResultView,
+  problem: ProblemView,
   settings: SettingsView,
 };
 
 export const Workspace: React.FC = () => {
   const styles = useStyles();
-  const { activeTab } = useAppStore();
-  const [pages, setPages] = useState<PageState[]>([{ id: 0, tab: activeTab, state: 'entered', direction: 'forward' }]);
-  const prevTabRef = useRef(activeTab);
+  const { primaryTab } = useAppStore();
+  const [pages, setPages] = useState<PageState[]>([{ id: 0, tab: primaryTab, state: 'entered', direction: 'forward' }]);
+  const prevTabRef = useRef(primaryTab);
   const pageIdRef = useRef(1);
-  const tabOrder = ['explorer', 'editor', 'testcase', 'result', 'settings'];
+  const tabOrder: PrimaryTabType[] = ['explorer', 'problem', 'settings'];
 
   useEffect(() => {
-    if (prevTabRef.current === activeTab) {
+    if (prevTabRef.current === primaryTab) {
       return;
     }
 
-    const currentIndex = tabOrder.indexOf(activeTab);
+    const currentIndex = tabOrder.indexOf(primaryTab);
     const prevIndex = tabOrder.indexOf(prevTabRef.current);
     const direction: PageDirection = currentIndex > prevIndex ? 'forward' : 'backward';
     const nextPageId = pageIdRef.current;
@@ -194,10 +190,10 @@ export const Workspace: React.FC = () => {
 
     setPages(prev => [
       ...prev.map(p => ({ ...p, state: 'exiting' as const })),
-      { id: nextPageId, tab: activeTab, state: 'entering', direction },
+      { id: nextPageId, tab: primaryTab, state: 'entering', direction },
     ]);
 
-    prevTabRef.current = activeTab;
+    prevTabRef.current = primaryTab;
 
     const timer = window.setTimeout(() => {
       setPages(prev =>
@@ -208,7 +204,7 @@ export const Workspace: React.FC = () => {
     }, PAGE_ENTER_DURATION_MS + 30);
 
     return () => window.clearTimeout(timer);
-  }, [activeTab]);
+  }, [primaryTab]);
 
   const getPageClasses = (page: PageState) => {
     const baseClass = styles.pageContainer;
@@ -228,9 +224,9 @@ export const Workspace: React.FC = () => {
       <main className={styles.container} role="main">
         <div className={styles.content}>
           {pages.map((page) => {
-            const ViewComponent = ViewComponents[page.tab] || (() => (
+            const ViewComponent = ViewComponents[page.tab] ?? (() => (
               <div className={styles.placeholderBox}>
-                <Title1>{tabLabels[page.tab] || page.tab}</Title1>
+                <Title1>{tabLabels[page.tab]}</Title1>
               </div>
             ));
 

@@ -1,4 +1,3 @@
-import * as React from 'react';
 import {
   Tooltip,
   makeStyles,
@@ -7,18 +6,17 @@ import {
   mergeClasses,
 } from '@fluentui/react-components';
 import {
-  NavigationRegular,
-  DocumentRegular,
-  SettingsRegular,
+  CodeRegular,
+  BeakerRegular,
+  TaskListLtrRegular,
   type FluentIcon,
 } from '@fluentui/react-icons';
-import { useAppStore, type PrimaryTabType } from '../../stores/useAppStore';
+import { useAppStore, type SecondaryTabType } from '../../stores/useAppStore';
 
 interface NavItem {
-  id: PrimaryTabType;
+  id: SecondaryTabType;
   label: string;
   icon: FluentIcon;
-  hidden?: boolean;
 }
 
 const useStyles = makeStyles({
@@ -29,10 +27,9 @@ const useStyles = makeStyles({
     flexDirection: 'column',
     alignItems: 'center',
     backgroundColor: tokens.colorNeutralBackground2,
-    ...shorthands.borderRight('1px', 'solid', tokens.colorNeutralStroke3),
+    ...shorthands.borderLeft('1px', 'solid', tokens.colorNeutralStroke3),
     boxSizing: 'border-box',
     flexShrink: 0,
-    transition: 'background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
   },
   navList: {
     display: 'flex',
@@ -41,13 +38,6 @@ const useStyles = makeStyles({
     gap: '6px',
     paddingTop: '12px',
     width: '100%',
-  },
-  navItemWrapper: {
-    position: 'relative',
-    width: '48px',
-    height: '44px',
-    transition: 'all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
-    transformOrigin: 'center center',
   },
   navButton: {
     position: 'relative',
@@ -81,11 +71,11 @@ const useStyles = makeStyles({
     '::after': {
       content: '""',
       position: 'absolute',
-      left: '0',
+      right: '0',
       top: '10px',
       bottom: '10px',
       width: '3px',
-      borderRadius: '0 2px 2px 0',
+      borderRadius: '2px 0 0 2px',
       backgroundColor: tokens.colorBrandStroke1,
       opacity: 0,
       transition: 'opacity 0.2s ease',
@@ -105,51 +95,43 @@ const useStyles = makeStyles({
   },
 });
 
-export const ActivityBar: React.FC = () => {
-  const styles = useStyles();
-  const { primaryTab, setPrimaryTab, selectedProblem } = useAppStore();
+const navItems: NavItem[] = [
+  { id: 'editor', label: '编辑器', icon: CodeRegular },
+  { id: 'testcase', label: '测试点', icon: BeakerRegular },
+  { id: 'result', label: '结果', icon: TaskListLtrRegular },
+];
 
-  const navItems: NavItem[] = [
-    { id: 'explorer', label: '题库', icon: NavigationRegular },
-    { id: 'problem', label: '题面', icon: DocumentRegular, hidden: !selectedProblem },
-    { id: 'settings', label: '设置', icon: SettingsRegular },
-  ];
+export const SecondaryActivityBar: React.FC = () => {
+  const styles = useStyles();
+  const { secondaryTab, setSecondaryTab } = useAppStore();
 
   return (
-    <nav className={styles.container} role="navigation" aria-label="活动栏">
+    <nav className={styles.container} role="navigation" aria-label="次级活动栏">
       <div className={styles.navList}>
         {navItems.map((item) => {
-          if (item.hidden) {
-            return null;
-          }
-
           const Icon = item.icon;
-          const isActive = primaryTab === item.id;
+          const isActive = secondaryTab === item.id;
 
           return (
-            <div
+            <Tooltip
               key={item.id}
-              className={styles.navItemWrapper}
+              content={item.label}
+              relationship="label"
+              positioning="before"
             >
-              <Tooltip
-                content={item.label}
-                relationship="label"
-                positioning="after"
+              <button
+                type="button"
+                className={mergeClasses(
+                  styles.navButton,
+                  isActive && styles.activeNavButton
+                )}
+                onClick={() => setSecondaryTab(item.id)}
+                aria-label={item.label}
+                aria-pressed={isActive}
               >
-                <button
-                  type="button"
-                  className={mergeClasses(
-                    styles.navButton,
-                    isActive && styles.activeNavButton
-                  )}
-                  onClick={() => setPrimaryTab(item.id)}
-                  aria-label={item.label}
-                  aria-pressed={isActive}
-                >
-                  <Icon className={styles.icon} />
-                </button>
-              </Tooltip>
-            </div>
+                <Icon className={styles.icon} />
+              </button>
+            </Tooltip>
           );
         })}
       </div>

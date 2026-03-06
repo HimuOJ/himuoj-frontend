@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
-export type TabType = 'explorer' | 'editor' | 'testcase' | 'result' | 'settings';
+export type PrimaryTabType = 'explorer' | 'problem' | 'settings';
+export type SecondaryTabType = 'editor' | 'testcase' | 'result';
 
 export type SubmissionStatus = 'idle' | 'pending' | 'accepted' | 'wrong-answer' | 'error';
 
@@ -20,8 +21,10 @@ export interface SelectedProblem {
 
 interface AppState {
   // Navigation
-  activeTab: TabType;
-  setActiveTab: (tab: TabType) => void;
+  primaryTab: PrimaryTabType;
+  setPrimaryTab: (tab: PrimaryTabType) => void;
+  secondaryTab: SecondaryTabType;
+  setSecondaryTab: (tab: SecondaryTabType) => void;
 
   // Selected Problem (for editor)
   selectedProblem: SelectedProblem | null;
@@ -60,13 +63,15 @@ interface AppState {
 
 export const useAppStore = create<AppState>((set) => ({
   // Navigation
-  activeTab: 'explorer',
-  setActiveTab: (tab) => set({ activeTab: tab }),
+  primaryTab: 'explorer',
+  setPrimaryTab: (tab) => set({ primaryTab: tab }),
+  secondaryTab: 'editor',
+  setSecondaryTab: (tab) => set({ secondaryTab: tab }),
 
   // Selected Problem (for editor)
   selectedProblem: null,
   setSelectedProblem: (problem) => set({ selectedProblem: problem }),
-  openProblemInEditor: (problem) => set({ selectedProblem: problem, activeTab: 'editor' }),
+  openProblemInEditor: (problem) => set({ selectedProblem: problem, primaryTab: 'problem', secondaryTab: 'editor' }),
 
   // Status Bar Info
   currentLanguage: 'C++',

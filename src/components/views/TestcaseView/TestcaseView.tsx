@@ -4,10 +4,9 @@ import { listProblemTestCasesMock } from '../../../api/mock';
 import { CardList } from '../../shared/CardList';
 import { FieldCard } from '../../shared/FieldCard';
 import type { components as ProblemComponents } from '../../../api/problems.gen';
+import { useAppStore } from '../../../stores/useAppStore';
 
 type TestCaseDetail = ProblemComponents['schemas']['TestCaseDetail'];
-
-const DEFAULT_PROBLEM_ID = 1;
 
 const useStyles = makeStyles({
   content: {
@@ -103,19 +102,23 @@ const useStyles = makeStyles({
 
 export const TestcaseView: React.FC = () => {
   const styles = useStyles();
+  const { selectedProblem } = useAppStore();
   const { loading, data: testCases } = useAsyncData<TestCaseDetail>(
     async () => {
-      const response = await listProblemTestCasesMock(DEFAULT_PROBLEM_ID, { includeHidden: true });
+      if (!selectedProblem) {
+        return [];
+      }
+      const response = await listProblemTestCasesMock(selectedProblem.id, { includeHidden: true });
       return response.items;
     },
-    []
+    [selectedProblem?.id]
   );
 
   return (
     <div className={styles.content}>
       <Title1>测试用例</Title1>
       <Text block className={styles.sectionText}>
-        显示该题目的测试用例元数据与对象引用
+        显示当前题目的测试用例元数据与对象引用
       </Text>
       <div className={`${styles.listStack} ${styles.staggerContainer}`}>
         <CardList
