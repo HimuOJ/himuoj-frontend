@@ -11,6 +11,7 @@ type TestCaseResultDetail = SubmissionComponents['schemas']['TestCaseResultDetai
 const useStyles = makeStyles({
   content: {
     maxWidth: '960px',
+    padding: '10px',
     margin: '0 auto',
   },
   sectionText: {

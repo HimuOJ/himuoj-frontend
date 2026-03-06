@@ -1,4 +1,4 @@
-import { FluentProvider, makeStyles, tokens } from '@fluentui/react-components';
+import { FluentProvider, makeStyles, tokens, Toaster } from '@fluentui/react-components';
 import { ActivityBar } from './components/ActivityBar';
 import { SecondaryActivityBar } from './components/SecondaryActivityBar';
 import { SplitPane } from './components/SplitPane';
@@ -106,6 +106,7 @@ function App() {
           {selectedProblem && <SecondaryActivityBar />}
         </div>
         <StatusBar />
+        <Toaster toasterId="main" />
       </div>
     </FluentProvider>
   );
