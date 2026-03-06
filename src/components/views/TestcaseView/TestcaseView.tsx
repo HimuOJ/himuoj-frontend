@@ -2,17 +2,16 @@ import { makeStyles, Title1, Text, tokens } from '@fluentui/react-components';
 import { useAsyncData } from '../../../hooks';
 import { listProblemTestCasesMock } from '../../../api/mock';
 import { CardList } from '../../shared/CardList';
-import { FieldCard } from '../../shared/FieldCard';
 import type { components as ProblemComponents } from '../../../api/problems.gen';
+import { useAppStore } from '../../../stores/useAppStore';
 
 type TestCaseDetail = ProblemComponents['schemas']['TestCaseDetail'];
 
-const DEFAULT_PROBLEM_ID = 1;
-
 const useStyles = makeStyles({
   content: {
-    maxWidth: '860px',
+    maxWidth: '960px',
     margin: '0 auto',
+    padding: '10px',
   },
   sectionText: {
     marginTop: '8px',
@@ -60,20 +59,6 @@ const useStyles = makeStyles({
     fontSize: '17px',
     lineHeight: '1.35',
   },
-  indexPill: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: '54px',
-    padding: '4px 10px',
-    borderRadius: '999px',
-    fontSize: '12px',
-    fontWeight: 700,
-    letterSpacing: '0.2px',
-    color: tokens.colorNeutralForeground2,
-    backgroundColor: 'var(--workspace-index-pill-bg)',
-    border: '1px solid var(--workspace-index-pill-border)',
-  },
   metaRow: {
     marginTop: '12px',
     display: 'flex',
@@ -90,54 +75,43 @@ const useStyles = makeStyles({
     background: tokens.colorNeutralBackground2,
     border: '1px solid var(--colorNeutralStroke2)',
   },
-  caseFields: {
-    marginTop: '10px',
-    display: 'grid',
-    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-    gap: '10px',
-    '@media (max-width: 720px)': {
-      gridTemplateColumns: '1fr',
-    },
-  },
 });
 
 export const TestcaseView: React.FC = () => {
   const styles = useStyles();
+  const { selectedProblem } = useAppStore();
   const { loading, data: testCases } = useAsyncData<TestCaseDetail>(
     async () => {
-      const response = await listProblemTestCasesMock(DEFAULT_PROBLEM_ID, { includeHidden: true });
-      return response.items;
+      if (!selectedProblem) {
+        return [];
+      }
+      const response = await listProblemTestCasesMock(selectedProblem.id, { includeHidden: false });
+      return response.items.filter(tc => !tc.isHidden);
     },
-    []
+    [selectedProblem?.id]
   );
 
   return (
     <div className={styles.content}>
       <Title1>测试用例</Title1>
       <Text block className={styles.sectionText}>
-        显示该题目的测试用例元数据与对象引用
+        显示当前题目的公开测试用例
       </Text>
       <div className={`${styles.listStack} ${styles.staggerContainer}`}>
         <CardList
           loading={loading}
           items={testCases}
-          emptyText="当前题目暂无测试用例"
+          emptyText="当前题目暂无公开测试用例"
           loadingText="正在加载测试用例..."
-          renderItem={(testCase) => (
+          renderItem={(testCase, index) => (
             <div key={testCase.id} className={styles.card}>
               <div className={styles.cardHeader}>
                 <Text weight="semibold" className={styles.titleText} block>
-                  用例 #{testCase.id} · 题目 #{testCase.problemId}
+                  测试用例 {index + 1}
                 </Text>
-                <span className={styles.indexPill}>{testCase.isHidden ? '隐藏' : '公开'}</span>
               </div>
               <div className={styles.metaRow}>
                 <span className={styles.metaPill}>分值权重 {testCase.scoreWeight}</span>
-                <span className={styles.metaPill}>Hidden: {testCase.isHidden ? 'true' : 'false'}</span>
-              </div>
-              <div className={styles.caseFields}>
-                <FieldCard label="inputUploadId" value={testCase.inputUploadId} />
-                <FieldCard label="expectedOutputUploadId" value={testCase.expectedOutputUploadId} />
               </div>
             </div>
           )}

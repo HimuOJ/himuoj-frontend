@@ -5,6 +5,13 @@ import {
   Text,
   mergeClasses,
   Spinner,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogBody,
+  DialogContent,
+  DialogSurface,
+  DialogTitle,
 } from '@fluentui/react-components';
 import {
   CircleRegular,
@@ -17,10 +24,12 @@ import {
   PersonRegular,
   CodeRegular,
   PlayRegular,
+  SendRegular,
   ErrorCircleFilled,
 } from '@fluentui/react-icons';
 import { useAppStore, type SubmissionStatus, type ConnectionStatus } from '../../stores/useAppStore';
 import { StatusBarItem } from './StatusBarItem';
+import { useEffect, useRef, useState } from 'react';
 
 const useStyles = makeStyles({
   container: {
@@ -41,11 +50,11 @@ const useStyles = makeStyles({
   idle: {
     backgroundColor: tokens.colorNeutralBackground1,
     color: tokens.colorNeutralForeground1,
+    ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
   },
   active: {
-    backgroundColor: tokens.colorBrandBackground,
-    color: tokens.colorNeutralForegroundOnBrand,
-    ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
+    backgroundColor: tokens.colorNeutralBackground1,
+    color: tokens.colorNeutralForeground1,
   },
   leftSection: {
     display: 'flex',
@@ -95,6 +104,13 @@ const useStyles = makeStyles({
     color: '#FFFFFF',
     ...shorthands.borderTop('1px', 'solid', 'rgba(255, 255, 255, 0.22)'),
   },
+  dialogContent: {
+    color: tokens.colorNeutralForeground2,
+    lineHeight: '1.6',
+  },
+  dialogActions: {
+    justifyContent: 'flex-end',
+  },
 });
 
 const getSubmissionStatusInfo = (status: SubmissionStatus) => {
@@ -135,6 +151,8 @@ export const StatusBar: React.FC = () => {
     notification,
     notify,
   } = useAppStore();
+  const [isSubmitDialogOpen, setIsSubmitDialogOpen] = useState(false);
+  const submitTimerRef = useRef<number | null>(null);
 
   const isActive = selectedProblem !== null;
   const connectionInfo = getConnectionStatusInfo(connectionStatus, isActive);
@@ -147,11 +165,40 @@ export const StatusBar: React.FC = () => {
 
   const submissionInfo = getSubmissionStatusInfo(submissionStatus);
 
+  useEffect(() => {
+    return () => {
+      if (submitTimerRef.current !== null) {
+        window.clearTimeout(submitTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleRunClick = () => {
     notify('running', '运行中');
     setTimeout(() => {
       notify('success', '提交通过');
     }, 1000);
+  };
+
+  const handleSubmitClick = () => {
+    setIsSubmitDialogOpen(true);
+  };
+
+  const handleCancelSubmit = () => {
+    setIsSubmitDialogOpen(false);
+  };
+
+  const handleConfirmSubmit = () => {
+    setIsSubmitDialogOpen(false);
+    if (submitTimerRef.current !== null) {
+      window.clearTimeout(submitTimerRef.current);
+    }
+
+    notify('running', '等待服务器评测');
+    submitTimerRef.current = window.setTimeout(() => {
+      notify('error', '当前服务不可用');
+      submitTimerRef.current = null;
+    }, 2000);
   };
 
   const isRunning = notification?.status === 'running';
@@ -191,6 +238,14 @@ export const StatusBar: React.FC = () => {
               onClick={handleRunClick}
               disabled={isRunning}
             />
+
+            <StatusBarItem
+              icon={<SendRegular />}
+              text="提交"
+              tooltip="提交代码"
+              onClick={handleSubmitClick}
+              disabled={isRunning}
+            />
           </>
         )}
 
@@ -207,6 +262,25 @@ export const StatusBar: React.FC = () => {
           tooltip={userInfo?.name || '游客'}
         />
       </div>
+
+      <Dialog open={isSubmitDialogOpen} onOpenChange={(_, data) => setIsSubmitDialogOpen(data.open)}>
+        <DialogSurface>
+          <DialogBody>
+            <DialogTitle>确认提交</DialogTitle>
+            <DialogContent className={styles.dialogContent}>
+              当前将提交这份代码并请求服务器评测。是否继续提交？
+            </DialogContent>
+            <DialogActions className={styles.dialogActions}>
+              <Button appearance="secondary" onClick={handleCancelSubmit}>
+                取消
+              </Button>
+              <Button appearance="primary" onClick={handleConfirmSubmit}>
+                是
+              </Button>
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
     </footer>
   );
 };

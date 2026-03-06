@@ -1,6 +1,9 @@
-import { FluentProvider, makeStyles, tokens } from '@fluentui/react-components';
+import { FluentProvider, makeStyles, tokens, Toaster } from '@fluentui/react-components';
 import { ActivityBar } from './components/ActivityBar';
+import { SecondaryActivityBar } from './components/SecondaryActivityBar';
+import { SplitPane } from './components/SplitPane';
 import { StatusBar } from './components/StatusBar';
+import { SecondaryWorkspace } from './components/SecondaryWorkspace';
 import { Workspace } from './components/Workspace';
 import { useAppStore } from './stores/useAppStore';
 import { himuojLightTheme, himuojDarkTheme } from './themes/himuoj';
@@ -27,6 +30,13 @@ const useStyles = makeStyles({
     position: 'relative',
     zIndex: 1,
   },
+  shellContent: {
+    display: 'flex',
+    flex: 1,
+    minWidth: 0,
+    minHeight: 0,
+    overflow: 'hidden',
+  },
   themeTransitionOverlay: {
     position: 'fixed',
     top: 0,
@@ -45,7 +55,7 @@ const useStyles = makeStyles({
 
 function App() {
   const styles = useStyles();
-  const { isDarkMode } = useAppStore();
+  const { isDarkMode, selectedProblem } = useAppStore();
   const appRef = useRef<HTMLDivElement>(null);
   const prevThemeRef = useRef(isDarkMode);
 
@@ -82,9 +92,21 @@ function App() {
         <div className="app-bg" aria-hidden="true" />
         <div className={styles.mainContainer}>
           <ActivityBar />
-          <Workspace />
+          <div className={styles.shellContent}>
+            {selectedProblem ? (
+              <SplitPane
+                defaultLeftWidth={50}
+                left={<Workspace />}
+                right={<SecondaryWorkspace />}
+              />
+            ) : (
+              <Workspace />
+            )}
+          </div>
+          {selectedProblem && <SecondaryActivityBar />}
         </div>
         <StatusBar />
+        <Toaster toasterId="main" />
       </div>
     </FluentProvider>
   );

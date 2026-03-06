@@ -13,7 +13,7 @@ const useStyles = makeStyles({
 interface CardListProps<T> {
   loading: boolean;
   items: T[];
-  renderItem: (item: T) => React.ReactNode;
+  renderItem: (item: T, index: number) => React.ReactNode;
   emptyText?: string;
   loadingText?: string;
 }
